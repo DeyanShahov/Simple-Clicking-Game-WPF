@@ -13,7 +13,7 @@
         <Label x:Name="txtLastScore" Content="Last Score: 0" HorizontalAlignment="Left" Margin="179,6,0,0" VerticalAlignment="Top" Foreground="Purple" FontWeight="Bold" FontSize="20"/>
         
 
-        <Rectangle x:Name="healthBar" HorizontalAlignment="Left" Height="24" Margin="418,12,0,0" Fill="DarkRed" VerticalAlignment="Top" Width="350"/>
+        <Rectangle x:Name="healthBar" IsHitTestVisible="False" HorizontalAlignment="Left" Height="24" Margin="418,12,0,0" Fill="DarkRed" VerticalAlignment="Top" Width="350"/>
 
     </Canvas>
 </Window>

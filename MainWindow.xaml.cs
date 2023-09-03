@@ -25,6 +25,7 @@ namespace Simple_Clicking_Game_WPF
         Random random = new Random();
         DispatcherTimer gameTimer = new DispatcherTimer();
         List<Ellipse> removeThis = new List<Ellipse>();
+        List<Rectangle> removeRect = new List<Rectangle>();
 
         int spawnRate = 60;
         int currentRate;
@@ -53,7 +54,7 @@ namespace Simple_Clicking_Game_WPF
             gameTimer.Start();
 
             currentRate = spawnRate;
-            
+
             ClickedSound = new Uri("pack://siteoforigin:,,,/Sound/clickedpop.mp3");
             PoppedSound = new Uri("pack://siteoforigin:,,,/Sound/pop.mp3");
         }
@@ -74,27 +75,57 @@ namespace Simple_Clicking_Game_WPF
 
                 brush = new SolidColorBrush(Color.FromRgb((byte)random.Next(1, 255), (byte)random.Next(1, 255), (byte)random.Next(1, 255)));
 
-                Ellipse circle = new Ellipse
+                int numberFigure = random.Next(0, 2);
+
+                if (numberFigure == 0)
                 {
-                    Tag = "circle",
-                    Height = 10,
-                    Width = 10,
-                    Stroke = Brushes.Black,
-                    StrokeThickness = 1,
-                    Fill = brush
-                };
+                    Ellipse circle = new Ellipse
+                    {
+                        Tag = "circle",
+                        Height = 10,
+                        Width = 10,
+                        Stroke = Brushes.Black,
+                        StrokeThickness = 1,
+                        Fill = brush
+                    };
 
-                Canvas.SetLeft(circle, posX);
-                Canvas.SetTop(circle, posY);
+                    Canvas.SetLeft(circle, posX);
+                    Canvas.SetTop(circle, posY);
 
-                MyCanvas.Children.Add(circle);
+                    MyCanvas.Children.Add(circle);
+                }
+                else if (numberFigure == 1)
+                {
+                    Rectangle cub = new Rectangle
+                    {
+                        Tag = "cub",
+                        Name = "game",
+                        Width = 10,
+                        Height = 10,
+                        Stroke = Brushes.Black,
+                        StrokeThickness = 1,
+                        Fill = brush
+                    };
+
+                    Canvas.SetLeft(cub, posX);
+                    Canvas.SetTop(cub, posY);
+
+                    MyCanvas.Children.Add(cub);
+                }
             }
 
             foreach (var x in MyCanvas.Children.OfType<Ellipse>())
             {
+                double newX = Canvas.GetLeft(x) - growthRate / 2;
+                double newY = Canvas.GetTop(x) - growthRate / 2;
+
                 x.Height += growthRate;
                 x.Width += growthRate;
-                x.RenderTransformOrigin = new Point(0.5, 0.5);
+
+                Canvas.SetLeft(x, newX);
+                Canvas.SetTop(x, newY);
+
+                //x.RenderTransformOrigin = new Point(random.NextDouble(), random.NextDouble());
 
                 if (x.Width > 70)
                 {
@@ -102,6 +133,31 @@ namespace Simple_Clicking_Game_WPF
                     health -= 15;
                     playerPopSound.Open(PoppedSound);
                     playerPopSound.Play();
+                }
+            }
+
+            foreach (var x in MyCanvas.Children.OfType<Rectangle>())
+            {
+                if (x.Name != "healthBar")
+                {
+                    double newX = Canvas.GetLeft(x) - growthRate / 2;
+                    double newY = Canvas.GetTop(x) - growthRate / 2;
+
+                    x.Height += growthRate;
+                    x.Width += growthRate;
+
+                    Canvas.SetLeft(x, newX);
+                    Canvas.SetTop(x, newY);
+
+                    //x.RenderTransformOrigin = new Point(random.NextDouble(), random.NextDouble());
+
+                    if (x.Width > 70)
+                    {
+                        removeRect.Add(x);
+                        health += (health < 350) ? 5 : 0;
+                        playerPopSound.Open(PoppedSound);
+                        playerPopSound.Play();
+                    }
                 }
             }
 
@@ -113,15 +169,18 @@ namespace Simple_Clicking_Game_WPF
                 MyCanvas.Children.Remove(el);
             }
 
+            foreach (Rectangle el in removeRect)
+            {
+                MyCanvas.Children.Remove(el);
+            }
+
             if (score > 5) spawnRate = 25;
 
-            if(score > 10)
+            if (score > 10)
             {
                 spawnRate = 15;
                 growthRate = 1.5;
             }
-
-
         }
 
         private void GameOverFunction()
@@ -134,7 +193,17 @@ namespace Simple_Clicking_Game_WPF
                 removeThis.Add(item);
             }
 
+            foreach (var item in MyCanvas.Children.OfType<Rectangle>())
+            {
+                if (item.Name != "healthBar") removeRect.Add(item);
+            }
+
             foreach (Ellipse el in removeThis)
+            {
+                MyCanvas.Children.Remove(el);
+            }
+
+            foreach (Rectangle el in removeRect)
             {
                 MyCanvas.Children.Remove(el);
             }
@@ -151,17 +220,17 @@ namespace Simple_Clicking_Game_WPF
 
         private void MyCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.OriginalSource is Ellipse)
+            if (e.OriginalSource is FrameworkElement element)
             {
-                Ellipse circle = (Ellipse)e.OriginalSource;
+                MyCanvas.Children.Remove(element);
 
-                MyCanvas.Children.Remove(circle);
-
-                score++;
+                if (element is Ellipse) score++;
+                else if (element is Rectangle) score--;
 
                 playClickSound.Open(ClickedSound);
                 playClickSound.Play();
             }
         }
+
     }
 }
