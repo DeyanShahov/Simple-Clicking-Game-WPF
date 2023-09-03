@@ -54,8 +54,6 @@ namespace Simple_Clicking_Game_WPF
 
         private void GameLoop(object? sender, EventArgs e)
         {
-            txtScore.Content = "Score: " + score;
-            txtLastScore.Content = "Last Score: " + lastScore;
 
             currentRate -= 2;
 
@@ -152,7 +150,9 @@ namespace Simple_Clicking_Game_WPF
             growthRate = 0.6;
             spawnRate = 60;
             lastScore = score;
+            txtLastScore.Content = "Last Score: " + lastScore;
             score = 0;
+            txtScore.Content = "Score: " + score;
             currentRate = 5;
             health = 350;
             removeThis.Clear();
@@ -167,6 +167,8 @@ namespace Simple_Clicking_Game_WPF
 
                 if (element is Ellipse) score++;
                 else if (element is Rectangle) score--;
+
+                txtScore.Content = "Score: " + score;
 
                 playClickSound.Open(ClickedSound);
                 playClickSound.Play();
