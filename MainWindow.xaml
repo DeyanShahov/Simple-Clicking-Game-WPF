@@ -5,8 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Simple_Clicking_Game_WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Clicky Game" Height="450" Width="800">
+    <Canvas Name="MyCanvas" MouseLeftButtonDown="MyCanvas_MouseLeftButtonDown" Background="DarkGray">
 
-    </Grid>
+
+        <Label Name="txtScore" Content="Score: 0" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" FontSize="20" FontWeight="Bold"/>
+        <Label x:Name="txtLastScore" Content="Last Score: 0" HorizontalAlignment="Left" Margin="179,6,0,0" VerticalAlignment="Top" Foreground="Purple" FontWeight="Bold" FontSize="20"/>
+        
+
+        <Rectangle x:Name="healthBar" HorizontalAlignment="Left" Height="24" Margin="418,12,0,0" Fill="DarkRed" VerticalAlignment="Top" Width="350"/>
+
+    </Canvas>
 </Window>
