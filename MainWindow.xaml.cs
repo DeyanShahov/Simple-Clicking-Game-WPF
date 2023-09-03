@@ -1,21 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
+using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using static System.Net.WebRequestMethods;
 
 namespace Simple_Clicking_Game_WPF
 {
@@ -27,7 +19,6 @@ namespace Simple_Clicking_Game_WPF
         Random random = new Random();
         DispatcherTimer gameTimer = new DispatcherTimer();
         List<Shape> removeThis = new List<Shape>();
-        //List<Rectangle> removeRect = new List<Rectangle>();
 
         int spawnRate = 60;
         int currentRate;
@@ -68,52 +59,23 @@ namespace Simple_Clicking_Game_WPF
 
             currentRate -= 2;
 
-            if (currentRate < 1)
+            if (currentRate < 1) CreateNewFigure();
+
+
+            foreach (var shape in MyCanvas.Children.OfType<Shape>())
             {
-                currentRate = spawnRate;
-
-                posX = random.Next(15, 700);
-                posY = random.Next(50, 350);
-
-                brush = new SolidColorBrush(Color.FromRgb((byte)random.Next(1, 255), (byte)random.Next(1, 255), (byte)random.Next(1, 255)));
-
-                int numberFigure = random.Next(0, 3);
-
-                Shape newShape;
-
-                if (numberFigure == 0 || numberFigure == 1) newShape = ShapeFactory.CreateCircle(brush);
-                else newShape = ShapeFactory.CreateRectangle(brush);
-
-                Canvas.SetLeft(newShape, posX);
-                Canvas.SetTop(newShape, posY);
-
-                MyCanvas.Children.Add(newShape);
-            }
-
-            foreach (var x in MyCanvas.Children.OfType<Shape>())
-            {
-                if (x.Name != "healthBar")
+                if (shape.Name != "healthBar")
                 {
-                    double newX = Canvas.GetLeft(x) - growthRate / 2;
-                    double newY = Canvas.GetTop(x) - growthRate / 2;
+                    double newX = Canvas.GetLeft(shape) - growthRate / 2;
+                    double newY = Canvas.GetTop(shape) - growthRate / 2;
 
-                    x.Height += growthRate;
-                    x.Width += growthRate;
+                    shape.Height += growthRate;
+                    shape.Width += growthRate;
 
-                    Canvas.SetLeft(x, newX);
-                    Canvas.SetTop(x, newY);
+                    Canvas.SetLeft(shape, newX);
+                    Canvas.SetTop(shape, newY);
 
-
-                    if (x.Width > 70)
-                    {
-                        removeThis.Add(x);
-
-                        if (x.Tag.ToString() == "circle") health -= 15;
-                        else if (x.Tag.ToString() == "cub") health += (health < 350) ? 5 : 0;
-
-                        playerPopSound.Open(PoppedSound);
-                        playerPopSound.Play();
-                    }
+                    CheckForAutoDestroy(shape);
                 }
             }
 
@@ -133,6 +95,42 @@ namespace Simple_Clicking_Game_WPF
                 spawnRate = 15;
                 growthRate = 1.5;
             }
+        }
+
+        private void CheckForAutoDestroy(Shape shape)
+        {
+            if (shape.Width > 70)
+            {
+                removeThis.Add(shape);
+
+                if (shape.Tag.ToString() == "circle") health -= 15;
+                else if (shape.Tag.ToString() == "cub") health += (health < 350) ? 5 : 0;
+
+                playerPopSound.Open(PoppedSound);
+                playerPopSound.Play();
+            }
+        }
+
+        private void CreateNewFigure()
+        {
+            currentRate = spawnRate;
+
+            posX = random.Next(15, 700);
+            posY = random.Next(50, 350);
+
+            brush = new SolidColorBrush(Color.FromRgb((byte)random.Next(1, 255), (byte)random.Next(1, 255), (byte)random.Next(1, 255)));
+
+            int numberFigure = random.Next(0, 3);
+
+            Shape newShape;
+
+            if (numberFigure == 0 || numberFigure == 1) newShape = ShapeFactory.CreateCircle(brush);
+            else newShape = ShapeFactory.CreateRectangle(brush);
+
+            Canvas.SetLeft(newShape, posX);
+            Canvas.SetTop(newShape, posY);
+
+            MyCanvas.Children.Add(newShape);
         }
 
         private void GameOverFunction()
