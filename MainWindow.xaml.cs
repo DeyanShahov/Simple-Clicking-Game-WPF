@@ -8,12 +8,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using static System.Net.WebRequestMethods;
 
 namespace Simple_Clicking_Game_WPF
 {
@@ -24,8 +26,8 @@ namespace Simple_Clicking_Game_WPF
     {
         Random random = new Random();
         DispatcherTimer gameTimer = new DispatcherTimer();
-        List<Ellipse> removeThis = new List<Ellipse>();
-        List<Rectangle> removeRect = new List<Rectangle>();
+        List<Shape> removeThis = new List<Shape>();
+        //List<Rectangle> removeRect = new List<Rectangle>();
 
         int spawnRate = 60;
         int currentRate;
@@ -75,68 +77,20 @@ namespace Simple_Clicking_Game_WPF
 
                 brush = new SolidColorBrush(Color.FromRgb((byte)random.Next(1, 255), (byte)random.Next(1, 255), (byte)random.Next(1, 255)));
 
-                int numberFigure = random.Next(0, 2);
+                int numberFigure = random.Next(0, 3);
 
-                if (numberFigure == 0)
-                {
-                    Ellipse circle = new Ellipse
-                    {
-                        Tag = "circle",
-                        Height = 10,
-                        Width = 10,
-                        Stroke = Brushes.Black,
-                        StrokeThickness = 1,
-                        Fill = brush
-                    };
+                Shape newShape;
 
-                    Canvas.SetLeft(circle, posX);
-                    Canvas.SetTop(circle, posY);
+                if (numberFigure == 0 || numberFigure == 1) newShape = ShapeFactory.CreateCircle(brush);
+                else newShape = ShapeFactory.CreateRectangle(brush);
 
-                    MyCanvas.Children.Add(circle);
-                }
-                else if (numberFigure == 1)
-                {
-                    Rectangle cub = new Rectangle
-                    {
-                        Tag = "cub",
-                        Name = "game",
-                        Width = 10,
-                        Height = 10,
-                        Stroke = Brushes.Black,
-                        StrokeThickness = 1,
-                        Fill = brush
-                    };
+                Canvas.SetLeft(newShape, posX);
+                Canvas.SetTop(newShape, posY);
 
-                    Canvas.SetLeft(cub, posX);
-                    Canvas.SetTop(cub, posY);
-
-                    MyCanvas.Children.Add(cub);
-                }
+                MyCanvas.Children.Add(newShape);
             }
 
-            foreach (var x in MyCanvas.Children.OfType<Ellipse>())
-            {
-                double newX = Canvas.GetLeft(x) - growthRate / 2;
-                double newY = Canvas.GetTop(x) - growthRate / 2;
-
-                x.Height += growthRate;
-                x.Width += growthRate;
-
-                Canvas.SetLeft(x, newX);
-                Canvas.SetTop(x, newY);
-
-                //x.RenderTransformOrigin = new Point(random.NextDouble(), random.NextDouble());
-
-                if (x.Width > 70)
-                {
-                    removeThis.Add(x);
-                    health -= 15;
-                    playerPopSound.Open(PoppedSound);
-                    playerPopSound.Play();
-                }
-            }
-
-            foreach (var x in MyCanvas.Children.OfType<Rectangle>())
+            foreach (var x in MyCanvas.Children.OfType<Shape>())
             {
                 if (x.Name != "healthBar")
                 {
@@ -149,12 +103,14 @@ namespace Simple_Clicking_Game_WPF
                     Canvas.SetLeft(x, newX);
                     Canvas.SetTop(x, newY);
 
-                    //x.RenderTransformOrigin = new Point(random.NextDouble(), random.NextDouble());
 
                     if (x.Width > 70)
                     {
-                        removeRect.Add(x);
-                        health += (health < 350) ? 5 : 0;
+                        removeThis.Add(x);
+
+                        if (x.Tag.ToString() == "circle") health -= 15;
+                        else if (x.Tag.ToString() == "cub") health += (health < 350) ? 5 : 0;
+
                         playerPopSound.Open(PoppedSound);
                         playerPopSound.Play();
                     }
@@ -164,15 +120,11 @@ namespace Simple_Clicking_Game_WPF
             if (health > 1) healthBar.Width = health;
             else GameOverFunction();
 
-            foreach (Ellipse el in removeThis)
+            foreach (Shape el in removeThis)
             {
                 MyCanvas.Children.Remove(el);
             }
 
-            foreach (Rectangle el in removeRect)
-            {
-                MyCanvas.Children.Remove(el);
-            }
 
             if (score > 5) spawnRate = 25;
 
@@ -188,25 +140,16 @@ namespace Simple_Clicking_Game_WPF
             gameTimer.Stop();
             MessageBox.Show("Game Over" + Environment.NewLine + "You Scored: " + score + Environment.NewLine + "Click Ok to play again!");
 
-            foreach (var item in MyCanvas.Children.OfType<Ellipse>())
+            foreach (var item in MyCanvas.Children.OfType<Shape>())
             {
-                removeThis.Add(item);
+                if (item.Name != "healthBar") removeThis.Add(item);
             }
 
-            foreach (var item in MyCanvas.Children.OfType<Rectangle>())
-            {
-                if (item.Name != "healthBar") removeRect.Add(item);
-            }
-
-            foreach (Ellipse el in removeThis)
+            foreach (Shape el in removeThis)
             {
                 MyCanvas.Children.Remove(el);
             }
 
-            foreach (Rectangle el in removeRect)
-            {
-                MyCanvas.Children.Remove(el);
-            }
 
             growthRate = 0.6;
             spawnRate = 60;
@@ -220,7 +163,7 @@ namespace Simple_Clicking_Game_WPF
 
         private void MyCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.OriginalSource is FrameworkElement element)
+            if (e.OriginalSource is FrameworkElement element && (e.OriginalSource is Ellipse || e.OriginalSource is Rectangle))
             {
                 MyCanvas.Children.Remove(element);
 
