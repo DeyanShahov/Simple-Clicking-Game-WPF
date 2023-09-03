@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,7 +53,7 @@ namespace Simple_Clicking_Game_WPF
             gameTimer.Start();
 
             currentRate = spawnRate;
-
+            
             ClickedSound = new Uri("pack://siteoforigin:,,,/Sound/clickedpop.mp3");
             PoppedSound = new Uri("pack://siteoforigin:,,,/Sound/pop.mp3");
         }
@@ -88,6 +89,64 @@ namespace Simple_Clicking_Game_WPF
 
                 MyCanvas.Children.Add(circle);
             }
+
+            foreach (var x in MyCanvas.Children.OfType<Ellipse>())
+            {
+                x.Height += growthRate;
+                x.Width += growthRate;
+                x.RenderTransformOrigin = new Point(0.5, 0.5);
+
+                if (x.Width > 70)
+                {
+                    removeThis.Add(x);
+                    health -= 15;
+                    playerPopSound.Open(PoppedSound);
+                    playerPopSound.Play();
+                }
+            }
+
+            if (health > 1) healthBar.Width = health;
+            else GameOverFunction();
+
+            foreach (Ellipse el in removeThis)
+            {
+                MyCanvas.Children.Remove(el);
+            }
+
+            if (score > 5) spawnRate = 25;
+
+            if(score > 10)
+            {
+                spawnRate = 15;
+                growthRate = 1.5;
+            }
+
+
+        }
+
+        private void GameOverFunction()
+        {
+            gameTimer.Stop();
+            MessageBox.Show("Game Over" + Environment.NewLine + "You Scored: " + score + Environment.NewLine + "Click Ok to play again!");
+
+            foreach (var item in MyCanvas.Children.OfType<Ellipse>())
+            {
+                removeThis.Add(item);
+            }
+
+            foreach (Ellipse el in removeThis)
+            {
+                MyCanvas.Children.Remove(el);
+            }
+
+            growthRate = 0.6;
+            spawnRate = 60;
+            lastScore = score;
+            score = 0;
+            currentRate = 5;
+            health = 350;
+            removeThis.Clear();
+            gameTimer.Start();
         }
 
         private void MyCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
